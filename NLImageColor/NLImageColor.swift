@@ -12,9 +12,8 @@ extension UIImage {
     
     func averageColor() -> UIColor {
         var bitmap = [UInt8](count: 4, repeatedValue: 0)
-        let smallImage = resizeImage(self, targetSize: CGSizeMake(20, 20))
+        let smallImage = resizeImage(self, targetSize: CGSizeMake(40, 40))
         if #available(iOS 9.0, *) {
-            // Get average color.
             let context = CIContext()
             let inputImage = smallImage.CIImage ?? CoreImage.CIImage(CGImage: smallImage.CGImage!)
             let extent = inputImage.extent
@@ -23,15 +22,10 @@ extension UIImage {
             let outputImage = filter.outputImage!
             let outputExtent = outputImage.extent
             assert(outputExtent.size.width == 1 && outputExtent.size.height == 1)
-
-            // Render to bitmap.
             context.render(outputImage, toBitmap: &bitmap, rowBytes: 4, bounds: CGRect(x: 0, y: 0, width: 1, height: 1), format: kCIFormatRGBA8, colorSpace: CGColorSpaceCreateDeviceRGB())
         } else {
-            // Create 1x1 context that interpolates pixels when drawing to it.
             let context = CGBitmapContextCreate(&bitmap, 1, 1, 8, 4, CGColorSpaceCreateDeviceRGB(), CGBitmapInfo.ByteOrderDefault.rawValue | CGImageAlphaInfo.PremultipliedLast.rawValue)!
             let inputImage = smallImage.CGImage ?? CIContext().createCGImage(smallImage.CIImage!, fromRect: smallImage.CIImage!.extent)
-
-            // Render to bitmap.
             CGContextDrawImage(context, CGRect(x: 0, y: 0, width: 1, height: 1), inputImage)
         }
 
@@ -82,13 +76,11 @@ extension UIImage {
     
     func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage {
         let hasAlpha = false
-        let scale: CGFloat = 0.0 // Automatically use scale factor of main screen
-        
+        let scale: CGFloat = 0.0
         UIGraphicsBeginImageContextWithOptions(targetSize, hasAlpha, scale)
         image.drawInRect(CGRect(origin: CGPointZero, size: targetSize))
-        
         let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext() // !!!
+        UIGraphicsEndImageContext()
         return scaledImage
     }
 }
